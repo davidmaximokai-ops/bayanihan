@@ -1,0 +1,2778 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Assistance and Volunteer Management</title>
+
+    <!-- Leaflet -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+    </script>
+
+    <!-- Google Font -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <style>
+
+        :root {
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --violet: #7c3aed;
+            --sidebar: #0f172a;
+        }
+
+        [data-theme="dark"] {
+            --bg: #0b0f1a;
+            --card: #151b2b;
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --border: #1e293b;
+            --sidebar: #070a12;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Outfit", sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            transition: 0.3s;
+        }
+
+        .app {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+
+        .sidebar {
+            width: 270px;
+            background: var(--sidebar);
+            color: white;
+            padding: 20px 16px;
+
+            position: sticky;
+            top: 0;
+
+            height: 100vh;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .logo span {
+            color: #7c3aed;
+        }
+
+        .campus {
+            opacity: 0.5;
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        .menu {
+            margin-top: 24px;
+        }
+
+        .menu button {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            padding: 12px 14px;
+
+            border-radius: 12px;
+            border: none;
+
+            background: transparent;
+            color: #94a3b8;
+
+            font-weight: 600;
+
+            width: 100%;
+
+            text-align: left;
+
+            cursor: pointer;
+
+            margin-bottom: 6px;
+
+            transition: 0.2s;
+        }
+
+        .menu button:hover,
+        .menu button.active {
+            background: #1e293b;
+            color: white;
+        }
+
+        .sidebar-box {
+            background: #1e293b;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+
+        /* SWITCH */
+
+        .switch {
+            width: 46px;
+            height: 26px;
+
+            background: #334155;
+
+            border-radius: 100px;
+
+            position: relative;
+
+            cursor: pointer;
+        }
+
+        .switch::after {
+            content: "";
+
+            position: absolute;
+
+            width: 20px;
+            height: 20px;
+
+            background: white;
+
+            border-radius: 50%;
+
+            top: 3px;
+            left: 3px;
+
+            transition: 0.3s;
+        }
+
+        [data-theme="light"] .switch::after {
+            left: 23px;
+        }
+
+        /* MAIN */
+
+        .main {
+            flex: 1;
+            padding: 20px 24px;
+            overflow-y: auto;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            flex-wrap: wrap;
+
+            gap: 12px;
+
+            margin-bottom: 18px;
+        }
+
+        .location-badge {
+            background: var(--card);
+            border: 1px solid var(--border);
+
+            padding: 8px 12px;
+
+            border-radius: 100px;
+
+            font-size: 12px;
+        }
+
+        /* BUTTONS */
+
+        .btn {
+            padding: 10px 16px;
+
+            border-radius: 100px;
+
+            border: none;
+
+            font-weight: 700;
+
+            font-size: 12px;
+
+            cursor: pointer;
+        }
+
+        .btn-violet {
+            background: var(--violet);
+            color: white;
+        }
+
+        .btn-dark {
+            background: var(--text);
+            color: var(--bg);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        /* PAGES */
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* KPI */
+
+        .kpi {
+            display: grid;
+
+            grid-template-columns: repeat(4, 1fr);
+
+            gap: 14px;
+        }
+
+        .kpi-card {
+            background: var(--card);
+
+            border: 1px solid var(--border);
+
+            border-radius: 18px;
+
+            padding: 18px;
+        }
+
+        .kpi-card h4 {
+            font-size: 11px;
+
+            opacity: 0.6;
+
+            letter-spacing: 1px;
+
+            text-transform: uppercase;
+        }
+
+        .kpi-card b {
+            font-size: 28px;
+
+            display: block;
+
+            margin: 5px 0;
+        }
+
+        /* CARDS */
+
+        .card {
+            background: var(--card);
+
+            border: 1px solid var(--border);
+
+            border-radius: 18px;
+
+            padding: 18px;
+        }
+
+        .grid2 {
+            display: grid;
+
+            grid-template-columns: 1.2fr 0.8fr;
+
+            gap: 14px;
+
+            margin-top: 14px;
+        }
+
+        /* FORM */
+
+        .form-grid {
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 10px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+
+            padding: 12px;
+
+            border-radius: 12px;
+
+            border: 1.5px solid var(--border);
+
+            background: var(--card);
+
+            color: var(--text);
+
+            outline: none;
+
+            margin: 5px 0;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--violet);
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        /* MAP */
+
+        #map {
+            height: 420px;
+
+            border-radius: 18px;
+
+            border: 1px solid var(--border);
+
+            margin-top: 14px;
+        }
+
+        #miniMap {
+            height: 260px;
+
+            border-radius: 14px;
+
+            margin-top: 10px;
+
+            border: 1px solid var(--border);
+        }
+
+        /* LIST */
+
+        .list-item {
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            padding: 10px;
+
+            border-radius: 12px;
+
+            border: 1px solid transparent;
+
+            margin-bottom: 8px;
+        }
+
+        .list-item:hover {
+            background: var(--bg);
+
+            border-color: var(--border);
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+
+            border-radius: 10px;
+
+            display: grid;
+
+            place-items: center;
+
+            font-weight: 800;
+
+            color: white;
+
+            flex-shrink: 0;
+        }
+
+        /* STATUS */
+
+        .status {
+            padding: 4px 10px;
+
+            border-radius: 100px;
+
+            font-size: 11px;
+
+            font-weight: 800;
+        }
+
+        .s-pending {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        .s-approved {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .s-ongoing {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+
+        .s-done {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        /* TAG */
+
+        .tag {
+            padding: 4px 8px;
+
+            border-radius: 100px;
+
+            font-size: 10px;
+
+            font-weight: 800;
+        }
+
+        /* TABLE */
+
+        table {
+            width: 100%;
+
+            border-collapse: collapse;
+        }
+
+        th {
+            font-size: 10px;
+
+            opacity: 0.5;
+
+            padding: 8px;
+
+            text-align: left;
+        }
+
+        td {
+            padding: 10px 8px;
+
+            border-top: 1px solid var(--border);
+
+            font-size: 13px;
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 1000px) {
+
+            .app {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+
+                height: auto;
+
+                position: relative;
+            }
+
+            .kpi {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .grid2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+
+            .main {
+                padding: 12px;
+            }
+
+            .kpi {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                align-items: flex-start;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body data-theme="dark">
+
+
+<div class="app">
+
+
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
+
+    <div class="sidebar">
+
+        <div>
+
+            <div class="logo">
+                🤝 Assistance
+                <span>Volunteer Management</span>
+            </div>
+
+            <div class="campus">
+                ICCT ANTIPOLO CAMPUS
+            </div>
+
+
+            <div class="menu">
+
+                <button
+                    class="active"
+                    id="m_dash"
+                    onclick="showPage('dash')">
+
+                    📊 Dashboard
+
+                </button>
+
+
+                <button
+                    id="m_mapview"
+                    onclick="showPage('mapview')">
+
+                    🗺️ Live Map
+
+                </button>
+
+
+                <button
+                    id="m_request"
+                    onclick="showPage('request')">
+
+                    🆘 Request Help
+
+                </button>
+
+
+                <button
+                    id="m_volunteer"
+                    onclick="showPage('volunteer')">
+
+                    🙋 Volunteers
+
+                </button>
+
+
+                <button
+                    id="m_manage"
+                    onclick="showPage('manage')">
+
+                    ⚙️ Manage
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div>
+
+            <!-- DARK MODE -->
+
+            <div
+                class="sidebar-box"
+                style="
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:center;
+                "
+            >
+
+                <span style="font-size:12px">
+                    🌙 Dark Mode
+                </span>
+
+                <span
+                    class="switch"
+                    onclick="toggleTheme()">
+                </span>
+
+            </div>
+
+
+            <!-- DONATION -->
+
+            <div class="sidebar-box">
+
+                <b style="font-size:12px">
+                    GCash Donation
+                </b>
+
+                <br>
+
+                <span style="font-size:12px">
+                    0912-345-6789
+                </span>
+
+                <br>
+
+                <span
+                    style="
+                        opacity:.5;
+                        font-size:11px;
+                    "
+                >
+                    Antipolo Foundation
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         MAIN
+    ====================================================== -->
+
+    <div class="main">
+
+
+        <!-- TOPBAR -->
+
+        <div class="topbar">
+
+            <h2
+                id="title"
+                style="
+                    font-size:26px;
+                    font-weight:800;
+                "
+            >
+                Dashboard + Map
+            </h2>
+
+
+            <div
+                style="
+                    display:flex;
+                    gap:8px;
+                    align-items:center;
+                    flex-wrap:wrap;
+                "
+            >
+
+                <span class="location-badge">
+                    📍 Antipolo Real Map • Leaflet
+                </span>
+
+
+                <button
+                    class="btn btn-dark"
+                    onclick="locateMe()">
+
+                    📍 My Location
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             DASHBOARD
+        ====================================================== -->
+
+        <div
+            id="dash"
+            class="page active"
+        >
+
+            <!-- KPI -->
+
+            <div class="kpi">
+
+
+                <div class="kpi-card">
+
+                    <h4>Requests</h4>
+
+                    <b id="k_req">
+                        0
+                    </b>
+
+                    <span
+                        class="tag"
+                        style="
+                            background:#f5f3ff;
+                            color:#7c3aed;
+                        "
+                    >
+                        Live
+                    </span>
+
+                </div>
+
+
+                <div class="kpi-card">
+
+                    <h4>Volunteers</h4>
+
+                    <b id="k_vol">
+                        0
+                    </b>
+
+                    <span
+                        class="tag"
+                        style="
+                            background:#f0f9ff;
+                            color:#0ea5e9;
+                        "
+                    >
+                        Active
+                    </span>
+
+                </div>
+
+
+                <div class="kpi-card">
+
+                    <h4>Done</h4>
+
+                    <b id="k_done">
+                        0
+                    </b>
+
+                    <span
+                        class="tag"
+                        style="
+                            background:#ecfdf5;
+                            color:#10b981;
+                        "
+                    >
+                        Completed
+                    </span>
+
+                </div>
+
+
+                <div class="kpi-card">
+
+                    <h4>Urgent</h4>
+
+                    <b id="k_urgent">
+                        0
+                    </b>
+
+                    <span
+                        class="tag"
+                        style="
+                            background:#fffbeb;
+                            color:#f59e0b;
+                        "
+                    >
+                        High Priority
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- MAP + URGENT -->
+
+            <div class="grid2">
+
+
+                <div class="card">
+
+                    <h3>
+                        🗺️ Mini Map Preview
+
+                        <button
+                            class="btn btn-ghost"
+                            onclick="showPage('mapview')"
+                            style="float:right"
+                        >
+                            Expand
+                        </button>
+
+                    </h3>
+
+
+                    <div id="miniMap"></div>
+
+                </div>
+
+
+                <div class="card">
+
+                    <h3>
+                        🔥 Urgent Now
+                    </h3>
+
+                    <div
+                        id="urgentBox"
+                        style="margin-top:10px"
+                    >
+
+                        <p
+                            style="
+                                font-size:12px;
+                                opacity:.5;
+                            "
+                        >
+                            No urgent requests
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             LIVE MAP
+        ====================================================== -->
+
+        <div
+            id="mapview"
+            class="page"
+        >
+
+            <div class="card">
+
+                <div
+                    style="
+                        display:flex;
+                        justify-content:space-between;
+                        align-items:center;
+                        flex-wrap:wrap;
+                        gap:8px;
+                    "
+                >
+
+                    <h3>
+                        🗺️ Real-time Antipolo Map
+                    </h3>
+
+
+                    <div
+                        style="
+                            display:flex;
+                            gap:6px;
+                            flex-wrap:wrap;
+                        "
+                    >
+
+                        <span
+                            class="tag"
+                            style="
+                                background:#fee2e2;
+                                color:#991b1b;
+                            "
+                        >
+                            🔴 Need Help
+                        </span>
+
+
+                        <span
+                            class="tag"
+                            style="
+                                background:#dcfce7;
+                                color:#166534;
+                            "
+                        >
+                            🟢 Volunteer
+                        </span>
+
+
+                        <span
+                            class="tag"
+                            style="
+                                background:#dbeafe;
+                                color:#1e40af;
+                            "
+                        >
+                            🔵 Done
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div id="map"></div>
+
+
+                <p
+                    style="
+                        font-size:11px;
+                        opacity:.6;
+                        margin-top:8px;
+                    "
+                >
+                    Click pins for details •
+                    OpenStreetMap + Leaflet •
+                    Antipolo locations
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             REQUEST HELP
+        ====================================================== -->
+
+        <div
+            id="request"
+            class="page"
+        >
+
+            <div
+                class="card"
+                style="max-width:700px"
+            >
+
+                <h3>
+                    🆘 Request Assistance
+                </h3>
+
+
+                <div class="form-grid">
+
+                    <input
+                        id="r_name"
+                        placeholder="Pangalan"
+                    >
+
+                    <input
+                        id="r_phone"
+                        placeholder="Phone"
+                    >
+
+                </div>
+
+
+                <div class="form-grid">
+
+                    <select id="r_brgy">
+
+                        <option value="14.5873,121.1753">
+                            Brgy San Jose - Antipolo
+                        </option>
+
+                        <option value="14.5842,121.1765">
+                            Brgy San Roque
+                        </option>
+
+                        <option value="14.5996,121.1790">
+                            Brgy Dela Paz
+                        </option>
+
+                        <option value="14.605,121.175">
+                            Brgy Mambugan
+                        </option>
+
+                        <option value="14.625,121.150">
+                            Brgy Cupang
+                        </option>
+
+                        <option value="14.592,121.125">
+                            Marikina Edge
+                        </option>
+
+                    </select>
+
+
+                    <select id="r_type">
+
+                        <option value="Food">
+                            Food
+                        </option>
+
+                        <option value="Medical">
+                            Medical
+                        </option>
+
+                        <option value="Disaster">
+                            Disaster
+                        </option>
+
+                        <option value="Child">
+                            Bata
+                        </option>
+
+                        <option value="Senior">
+                            Senior
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <textarea
+                    id="r_story"
+                    rows="3"
+                    placeholder="Kwento / Details..."
+                ></textarea>
+
+
+                <div class="form-grid">
+
+                    <input
+                        id="r_members"
+                        type="number"
+                        min="1"
+                        value="1"
+                        placeholder="Members"
+                    >
+
+
+                    <select id="r_priority">
+
+                        <option value="High">
+                            High
+                        </option>
+
+                        <option value="Medium" selected>
+                            Medium
+                        </option>
+
+                        <option value="Low">
+                            Low
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <button
+                    class="btn btn-violet"
+                    style="
+                        width:100%;
+                        margin-top:10px;
+                    "
+                    onclick="addRequest()"
+                >
+                    Submit Request
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             VOLUNTEERS
+        ====================================================== -->
+
+        <div
+            id="volunteer"
+            class="page"
+        >
+
+            <div
+                class="card"
+                style="max-width:700px"
+            >
+
+                <h3>
+                    🙋 Be a Volunteer
+                </h3>
+
+
+                <div class="form-grid">
+
+                    <input
+                        id="v_name"
+                        placeholder="Name"
+                    >
+
+                    <input
+                        id="v_phone"
+                        placeholder="Phone"
+                    >
+
+
+                    <select id="v_skill">
+
+                        <option>
+                            General Repack
+                        </option>
+
+                        <option>
+                            Rider Delivery
+                        </option>
+
+                        <option>
+                            Medical
+                        </option>
+
+                        <option>
+                            Teacher
+                        </option>
+
+                    </select>
+
+
+                    <select id="v_area">
+
+                        <option>
+                            Antipolo
+                        </option>
+
+                        <option>
+                            Rizal
+                        </option>
+
+                        <option>
+                            Marikina
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <input
+                    id="v_loc"
+                    placeholder="Location lat,lng"
+                >
+
+
+                <button
+                    class="btn btn-dark"
+                    style="
+                        width:100%;
+                        margin-top:10px;
+                    "
+                    onclick="addVolunteer()"
+                >
+                    Register Volunteer
+                </button>
+
+            </div>
+
+
+            <div
+                class="card"
+                style="
+                    margin-top:14px;
+                    max-width:700px;
+                "
+            >
+
+                <h3>
+                    Volunteers List
+                </h3>
+
+                <div
+                    id="volList"
+                    style="margin-top:10px"
+                >
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             MANAGE
+        ====================================================== -->
+
+        <div
+            id="manage"
+            class="page"
+        >
+
+            <div class="card">
+
+                <h3>
+                    ⚙️ Manage Requests
+                </h3>
+
+
+                <div
+                    style="
+                        display:flex;
+                        gap:8px;
+                        margin-top:10px;
+                        flex-wrap:wrap;
+                    "
+                >
+
+                    <input
+                        id="q"
+                        placeholder="Search..."
+                        style="max-width:240px"
+                    >
+
+
+                    <select
+                        id="f_status"
+                        style="max-width:160px"
+                    >
+
+                        <option value="">
+                            All Status
+                        </option>
+
+                        <option>
+                            Pending
+                        </option>
+
+                        <option>
+                            Approved
+                        </option>
+
+                        <option>
+                            Ongoing
+                        </option>
+
+                        <option>
+                            Done
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div
+                    style="
+                        overflow-x:auto;
+                        margin-top:12px;
+                    "
+                >
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Name
+                                </th>
+
+                                <th>
+                                    Type
+                                </th>
+
+                                <th>
+                                    Barangay
+                                </th>
+
+                                <th>
+                                    Volunteer
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody id="manageTable">
+
+                            <tr>
+
+                                <td colspan="5">
+                                    No data yet.
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================= -->
+
+<script>
+
+let map;
+let miniMap;
+
+let requests = [];
+let volunteers = [];
+
+let markers = [];
+
+
+/* =========================================================
+   PAGE NAVIGATION
+========================================================= */
+
+function showPage(id) {
+
+    document
+        .querySelectorAll(".page")
+        .forEach(page => {
+            page.classList.remove("active");
+        });
+
+
+    document
+        .getElementById(id)
+        .classList.add("active");
+
+
+    document
+        .querySelectorAll(".menu button")
+        .forEach(button => {
+            button.classList.remove("active");
+        });
+
+
+    const menuButton =
+        document.getElementById("m_" + id);
+
+    if (menuButton) {
+        menuButton.classList.add("active");
+    }
+
+
+    const titles = {
+
+        dash: "Dashboard + Map",
+
+        mapview: "Live Map",
+
+        request: "Request Help",
+
+        volunteer: "Volunteers",
+
+        manage: "Manage Requests"
+
+    };
+
+
+    document.getElementById("title").innerText =
+        titles[id];
+
+
+    if (id === "mapview") {
+
+        setTimeout(() => {
+
+            if (map) {
+
+                map.invalidateSize();
+
+                renderPins();
+
+            }
+
+        }, 200);
+
+    }
+
+
+    if (id === "dash") {
+
+        setTimeout(() => {
+
+            if (miniMap) {
+                miniMap.invalidateSize();
+            }
+
+        }, 200);
+
+        renderDashboard();
+
+    }
+
+
+    if (id === "volunteer") {
+
+        loadVolunteers();
+
+    }
+
+
+    if (id === "manage") {
+
+        loadRequests();
+
+    }
+
+}
+
+
+/* =========================================================
+   THEME
+========================================================= */
+
+function toggleTheme() {
+
+    const current =
+        document.body.getAttribute("data-theme");
+
+    const next =
+        current === "dark"
+            ? "light"
+            : "dark";
+
+
+    document.body.setAttribute(
+        "data-theme",
+        next
+    );
+
+    localStorage.setItem(
+        "theme",
+        next
+    );
+
+}
+
+
+/* =========================================================
+   MAP
+========================================================= */
+
+function initMaps() {
+
+    map = L.map("map")
+        .setView(
+            [14.5873, 121.1753],
+            13
+        );
+
+
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            maxZoom: 19,
+
+            attribution:
+                "&copy; OpenStreetMap contributors"
+        }
+    ).addTo(map);
+
+
+    miniMap = L.map(
+        "miniMap",
+        {
+            zoomControl: false
+        }
+    ).setView(
+        [14.5873, 121.1753],
+        12
+    );
+
+
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            maxZoom: 19,
+
+            attribution:
+                "&copy; OpenStreetMap contributors"
+        }
+    ).addTo(miniMap);
+
+
+    renderPins();
+
+}
+
+
+/* =========================================================
+   MAP MARKERS
+========================================================= */
+
+function renderPins() {
+
+    if (!map) {
+        return;
+    }
+
+
+    markers.forEach(marker => {
+
+        map.removeLayer(marker);
+
+    });
+
+
+    markers = [];
+
+
+    requests.forEach(request => {
+
+        if (!request.coords) {
+            return;
+        }
+
+
+        const parts =
+            request.coords.split(",");
+
+
+        const lat =
+            Number(parts[0]);
+
+        const lng =
+            Number(parts[1]);
+
+
+        if (
+            isNaN(lat) ||
+            isNaN(lng)
+        ) {
+            return;
+        }
+
+
+        let markerColor = "#f59e0b";
+
+
+        if (request.status === "Done") {
+
+            markerColor = "#0ea5e9";
+
+        }
+        else if (
+            request.priority === "High"
+        ) {
+
+            markerColor = "#ef4444";
+
+        }
+
+
+        const icon =
+            L.divIcon({
+
+                html: `
+                    <div style="
+                        background:${markerColor};
+                        width:22px;
+                        height:22px;
+                        border-radius:50%;
+                        border:3px solid white;
+                        box-shadow:
+                            0 2px 8px
+                            rgba(0,0,0,.4);
+                    ">
+                    </div>
+                `,
+
+                className: ""
+
+            });
+
+
+        const marker =
+            L.marker(
+                [lat, lng],
+                { icon: icon }
+            )
+            .addTo(map)
+            .bindPopup(`
+
+                <b>${escapeHtml(request.name)}</b>
+
+                <br>
+
+                ${escapeHtml(request.request_type)}
+
+                -
+
+                ${escapeHtml(request.priority)}
+
+                <br>
+
+                ${escapeHtml(request.brgy)}
+
+                <br>
+
+                ${escapeHtml(request.story || "")}
+
+                <br><br>
+
+                <b>Status:</b>
+                ${escapeHtml(request.status)}
+
+                <br>
+
+                <b>Volunteer:</b>
+                ${escapeHtml(request.volunteer)}
+
+            `);
+
+
+        markers.push(marker);
+
+    });
+
+
+    volunteers.forEach(volunteer => {
+
+        if (!volunteer.coords) {
+            return;
+        }
+
+
+        const parts =
+            volunteer.coords.split(",");
+
+
+        const lat =
+            Number(parts[0]);
+
+        const lng =
+            Number(parts[1]);
+
+
+        if (
+            isNaN(lat) ||
+            isNaN(lng)
+        ) {
+            return;
+        }
+
+
+        const icon =
+            L.divIcon({
+
+                html: `
+
+                    <div style="
+                        background:#10b981;
+                        width:24px;
+                        height:24px;
+                        border-radius:50%;
+                        border:3px solid white;
+                        display:grid;
+                        place-items:center;
+                        font-size:11px;
+                    ">
+                        🙋
+                    </div>
+
+                `,
+
+                className: ""
+
+            });
+
+
+        const marker =
+            L.marker(
+                [lat, lng],
+                { icon: icon }
+            )
+            .addTo(map)
+            .bindPopup(`
+
+                <b>Volunteer:</b>
+                ${escapeHtml(volunteer.name)}
+
+                <br>
+
+                ${escapeHtml(volunteer.skill)}
+
+                <br>
+
+                ${escapeHtml(volunteer.area)}
+
+                <br>
+
+                Tasks:
+                ${volunteer.tasks}
+
+            `);
+
+
+        markers.push(marker);
+
+    });
+
+}
+
+
+/* =========================================================
+   ADD REQUEST
+========================================================= */
+
+async function addRequest() {
+
+    const name =
+        document.getElementById("r_name").value.trim();
+
+    const phone =
+        document.getElementById("r_phone").value.trim();
+
+    const brgySelect =
+        document.getElementById("r_brgy");
+
+    const brgy =
+        brgySelect.options[
+            brgySelect.selectedIndex
+        ].text;
+
+    const coords =
+        brgySelect.value;
+
+    const requestType =
+        document.getElementById("r_type").value;
+
+    const story =
+        document.getElementById("r_story").value;
+
+    const members =
+        document.getElementById("r_members").value;
+
+    const priority =
+        document.getElementById("r_priority").value;
+
+
+    if (!name) {
+
+        alert("Please enter your name.");
+
+        return;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/requests",
+                {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        name: name,
+
+                        phone: phone,
+
+                        brgy: brgy,
+
+                        coords: coords,
+
+                        request_type:
+                            requestType,
+
+                        story: story,
+
+                        members:
+                            members,
+
+                        priority:
+                            priority
+
+                    })
+
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            alert(
+                data.message ||
+                "Failed to submit request."
+            );
+
+            return;
+
+        }
+
+
+        alert(
+            "Assistance request submitted successfully!"
+        );
+
+
+        document.getElementById("r_name").value = "";
+
+        document.getElementById("r_phone").value = "";
+
+        document.getElementById("r_story").value = "";
+
+        document.getElementById("r_members").value = "1";
+
+
+        await loadRequests();
+
+        await loadDashboard();
+
+
+        showPage("mapview");
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Cannot connect to the backend."
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   ADD VOLUNTEER
+========================================================= */
+
+async function addVolunteer() {
+
+    const name =
+        document.getElementById("v_name").value.trim();
+
+    const phone =
+        document.getElementById("v_phone").value.trim();
+
+    const skill =
+        document.getElementById("v_skill").value;
+
+    const area =
+        document.getElementById("v_area").value;
+
+    const coords =
+        document.getElementById("v_loc").value.trim()
+        || "14.5873,121.1753";
+
+
+    if (!name) {
+
+        alert("Please enter your name.");
+
+        return;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/volunteers",
+                {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        name: name,
+
+                        phone: phone,
+
+                        skill: skill,
+
+                        area: area,
+
+                        coords: coords
+
+                    })
+
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            alert(
+                data.message ||
+                "Failed to register."
+            );
+
+            return;
+
+        }
+
+
+        alert(
+            "Volunteer registered successfully!"
+        );
+
+
+        document.getElementById("v_name").value = "";
+
+        document.getElementById("v_phone").value = "";
+
+        document.getElementById("v_loc").value = "";
+
+
+        await loadVolunteers();
+
+        await loadDashboard();
+
+
+        showPage("mapview");
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Cannot connect to the backend."
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   LOAD REQUESTS
+========================================================= */
+
+async function loadRequests() {
+
+    try {
+
+        const response =
+            await fetch("/api/requests");
+
+
+        requests =
+            await response.json();
+
+
+        renderManage();
+
+        renderPins();
+
+        renderDashboard();
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+    }
+
+}
+
+
+/* =========================================================
+   LOAD VOLUNTEERS
+========================================================= */
+
+async function loadVolunteers() {
+
+    try {
+
+        const response =
+            await fetch("/api/volunteers");
+
+
+        volunteers =
+            await response.json();
+
+
+        renderVolunteers();
+
+        renderPins();
+
+        renderDashboard();
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+    }
+
+}
+
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+
+async function loadDashboard() {
+
+    try {
+
+        const response =
+            await fetch("/api/dashboard");
+
+
+        const data =
+            await response.json();
+
+
+        document.getElementById("k_req")
+            .innerText = data.requests;
+
+
+        document.getElementById("k_vol")
+            .innerText = data.volunteers;
+
+
+        document.getElementById("k_done")
+            .innerText = data.done;
+
+
+        document.getElementById("k_urgent")
+            .innerText = data.urgent;
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+    }
+
+}
+
+
+function renderDashboard() {
+
+    const urgent =
+        requests.filter(
+            request =>
+                request.priority === "High" &&
+                request.status !== "Done"
+        );
+
+
+    const box =
+        document.getElementById("urgentBox");
+
+
+    if (urgent.length === 0) {
+
+        box.innerHTML = `
+
+            <p style="
+                font-size:12px;
+                opacity:.5;
+            ">
+                No urgent requests
+            </p>
+
+        `;
+
+        return;
+
+    }
+
+
+    box.innerHTML =
+        urgent.slice(0, 3)
+        .map(request => `
+
+            <div
+                class="list-item"
+                style="
+                    background:var(--bg);
+                    border:1px solid var(--border);
+                "
+            >
+
+                <div
+                    class="avatar"
+                    style="background:#ef4444"
+                >
+                    !
+                </div>
+
+                <div>
+
+                    <b>
+                        ${escapeHtml(request.name)}
+                    </b>
+
+                    -
+
+                    ${escapeHtml(request.request_type)}
+
+                    <br>
+
+                    <span
+                        style="
+                            font-size:11px;
+                            opacity:.6;
+                        "
+                    >
+                        ${escapeHtml(request.brgy)}
+                    </span>
+
+                </div>
+
+            </div>
+
+        `)
+        .join("");
+
+}
+
+
+/* =========================================================
+   VOLUNTEER LIST
+========================================================= */
+
+function renderVolunteers() {
+
+    const list =
+        document.getElementById("volList");
+
+
+    if (volunteers.length === 0) {
+
+        list.innerHTML = `
+
+            <p style="
+                font-size:12px;
+                opacity:.5;
+            ">
+                No volunteers registered yet.
+            </p>
+
+        `;
+
+        return;
+
+    }
+
+
+    list.innerHTML =
+        volunteers.map(volunteer => `
+
+            <div class="list-item">
+
+                <div
+                    class="avatar"
+                    style="background:#7c3aed"
+                >
+                    ${escapeHtml(
+                        volunteer.name.charAt(0)
+                    )}
+                </div>
+
+
+                <div>
+
+                    <b>
+                        ${escapeHtml(
+                            volunteer.name
+                        )}
+                    </b>
+
+                    <br>
+
+                    <span
+                        style="
+                            font-size:12px;
+                            opacity:.6;
+                        "
+                    >
+                        ${escapeHtml(
+                            volunteer.skill
+                        )}
+
+                        •
+
+                        ${escapeHtml(
+                            volunteer.area
+                        )}
+                    </span>
+
+                </div>
+
+
+                <span
+                    style="
+                        margin-left:auto;
+                        font-size:11px;
+                    "
+                >
+                    ${volunteer.tasks} done
+                </span>
+
+            </div>
+
+        `)
+        .join("");
+
+}
+
+
+/* =========================================================
+   MANAGE
+========================================================= */
+
+function renderManage() {
+
+    const table =
+        document.getElementById(
+            "manageTable"
+        );
+
+
+    const search =
+        document.getElementById("q")
+            .value
+            .toLowerCase();
+
+
+    const status =
+        document.getElementById("f_status")
+            .value;
+
+
+    const filtered =
+        requests.filter(request => {
+
+            const matchesSearch =
+                request.name
+                    .toLowerCase()
+                    .includes(search)
+
+                ||
+
+                request.brgy
+                    .toLowerCase()
+                    .includes(search);
+
+
+            const matchesStatus =
+                !status ||
+                request.status === status;
+
+
+            return (
+                matchesSearch &&
+                matchesStatus
+            );
+
+        });
+
+
+    if (filtered.length === 0) {
+
+        table.innerHTML = `
+
+            <tr>
+
+                <td colspan="5">
+                    No data found.
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+
+    }
+
+
+    table.innerHTML =
+        filtered.map(request => `
+
+            <tr>
+
+                <td>
+
+                    <b>
+                        ${escapeHtml(
+                            request.name
+                        )}
+                    </b>
+
+                    <br>
+
+                    <span
+                        style="
+                            font-size:11px;
+                            opacity:.6;
+                        "
+                    >
+                        ${escapeHtml(
+                            request.phone || ""
+                        )}
+                    </span>
+
+                </td>
+
+
+                <td>
+
+                    ${escapeHtml(
+                        request.request_type
+                    )}
+
+                    <br>
+
+                    <span
+                        class="tag"
+                        style="
+                            background:#fef3c7;
+                            color:#92400e;
+                        "
+                    >
+                        ${escapeHtml(
+                            request.priority
+                        )}
+                    </span>
+
+                </td>
+
+
+                <td>
+
+                    ${escapeHtml(
+                        request.brgy
+                    )}
+
+                </td>
+
+
+                <td>
+
+                    <select
+                        onchange="
+                            assignVolunteer(
+                                ${request.id},
+                                this.value
+                            )
+                        "
+                        style="
+                            padding:6px;
+                            border-radius:8px;
+                        "
+                    >
+
+                        <option
+                            value="Not Assigned"
+                        >
+                            Not Assigned
+                        </option>
+
+
+                        ${volunteers.map(
+                            volunteer => `
+
+                                <option
+                                    value="${escapeAttribute(
+                                        volunteer.name
+                                    )}"
+                                    ${
+                                        request.volunteer ===
+                                        volunteer.name
+                                            ? "selected"
+                                            : ""
+                                    }
+                                >
+                                    ${escapeHtml(
+                                        volunteer.name
+                                    )}
+                                </option>
+
+                            `
+                        ).join("")}
+
+                    </select>
+
+                </td>
+
+
+                <td>
+
+                    <select
+                        onchange="
+                            setStatus(
+                                ${request.id},
+                                this.value
+                            )
+                        "
+                        style="
+                            padding:6px;
+                            border-radius:8px;
+                        "
+                    >
+
+                        ${[
+                            "Pending",
+                            "Approved",
+                            "Ongoing",
+                            "Done"
+                        ].map(
+                            item => `
+
+                                <option
+                                    ${
+                                        request.status === item
+                                            ? "selected"
+                                            : ""
+                                    }
+                                >
+                                    ${item}
+                                </option>
+
+                            `
+                        ).join("")}
+
+                    </select>
+
+                </td>
+
+            </tr>
+
+        `)
+        .join("");
+
+}
+
+
+/* =========================================================
+   ASSIGN VOLUNTEER
+========================================================= */
+
+async function assignVolunteer(
+    requestId,
+    volunteer
+) {
+
+    try {
+
+        await fetch(
+            `/api/requests/${requestId}/assign`,
+            {
+
+                method: "PUT",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+                    volunteer: volunteer
+                })
+
+            }
+        );
+
+
+        await loadRequests();
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+    }
+
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+async function setStatus(
+    requestId,
+    status
+) {
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/requests/${requestId}/status`,
+                {
+
+                    method: "PUT",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        status: status
+                    })
+
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            alert(data.message);
+
+            return;
+
+        }
+
+
+        await loadRequests();
+
+        await loadVolunteers();
+
+        await loadDashboard();
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+    }
+
+}
+
+
+/* =========================================================
+   LOCATION
+========================================================= */
+
+function locateMe() {
+
+    if (!navigator.geolocation) {
+
+        alert(
+            "Geolocation is not supported."
+        );
+
+        return;
+
+    }
+
+
+    navigator.geolocation.getCurrentPosition(
+
+        position => {
+
+            const lat =
+                position.coords.latitude;
+
+            const lng =
+                position.coords.longitude;
+
+
+            if (map) {
+
+                map.setView(
+                    [lat, lng],
+                    15
+                );
+
+
+                L.marker(
+                    [lat, lng]
+                )
+                .addTo(map)
+                .bindPopup(
+                    "📍 You are here"
+                )
+                .openPopup();
+
+            }
+
+
+            document.getElementById(
+                "v_loc"
+            ).value =
+                lat + "," + lng;
+
+        },
+
+        error => {
+
+            alert(
+                "Unable to get your location."
+            );
+
+        }
+
+    );
+
+}
+
+
+/* =========================================================
+   SECURITY HELPERS
+========================================================= */
+
+function escapeHtml(value) {
+
+    if (value === null ||
+        value === undefined) {
+
+        return "";
+
+    }
+
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+function escapeAttribute(value) {
+
+    return escapeHtml(value);
+
+}
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+document
+    .getElementById("q")
+    .addEventListener(
+        "input",
+        renderManage
+    );
+
+
+document
+    .getElementById("f_status")
+    .addEventListener(
+        "change",
+        renderManage
+    );
+
+
+/* =========================================================
+   START
+========================================================= */
+
+window.addEventListener(
+    "load",
+    async function () {
+
+        const savedTheme =
+            localStorage.getItem("theme")
+            || "dark";
+
+
+        document.body.setAttribute(
+            "data-theme",
+            savedTheme
+        );
+
+
+        initMaps();
+
+
+        await loadRequests();
+
+        await loadVolunteers();
+
+        await loadDashboard();
+
+
+        renderDashboard();
+
+    }
+);
+
+</script>
+
+</body>
+</html>
+
